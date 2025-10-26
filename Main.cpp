@@ -8,13 +8,12 @@
 
 // --- Helper Functions for User Input ---
 
-// Function to get a non-empty string input
+// Function to get a non-empty string input from the user
 std::string getValidatedStringInput(const std::string& prompt) {
     std::string input;
     do {
         std::cout << prompt;
-        // هذا السطر ينظف المخزن المؤقت قبل محاولة قراءة سطر كامل باستخدام getline
-        // (حل مشكلة توقف البرنامج بعد إدخال رقم وقبل إدخال نص)
+        // Clears the input buffer to prevent issues with std::getline after std::cin >> int
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::getline(std::cin, input);
         if (input.empty()) {
@@ -24,33 +23,30 @@ std::string getValidatedStringInput(const std::string& prompt) {
     return input;
 }
 
-// Function to get an integer input
+// Function to get a validated integer input from the user
 int getValidatedIntegerInput(const std::string& prompt) {
     int value;
     while (true) {
         std::cout << prompt;
         std::cin >> value;
-        if (std::cin.fail()) {
+        if (std::cin.fail()) { // Check if input failed (e.g., non-numeric input)
             std::cout << "Invalid input. Please enter a number." << std::endl;
             std::cin.clear(); // Clear error flags
             // Discard invalid input from the buffer
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         } else {
-            // لا نحتاج هنا لـ ignore() بعد القيمة الصحيحة مباشرة
-            // لأن getValidatedStringInput ستتكفل بالتنظيف قبل أي getline لاحقاً
-            // ولكن للحفاظ على الاتساق مع التنظيف في getValidatedStringInput،
-            // يمكننا إبقاء هذا السطر أيضًا كإجراء احترازي إضافي.
+            // Clears the rest of the line from the buffer after a valid integer is read
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             return value;
         }
     }
 }
 
-// Function to get an integer input that must be positive
+// Function to get a validated positive integer input from the user
 int getValidatedPositiveIntegerInput(const std::string& prompt) {
     int value;
     while (true) {
-        value = getValidatedIntegerInput(prompt); // تستدعي الدالة السابقة
+        value = getValidatedIntegerInput(prompt); // Calls the general integer input function
         if (value > 0) {
             return value;
         } else {
@@ -61,6 +57,7 @@ int getValidatedPositiveIntegerInput(const std::string& prompt) {
 
 // --- Main Program Logic ---
 
+// Displays the main menu options
 void displayMainMenu() {
     std::cout << "\n--- Hospital Management System Menu ---" << std::endl;
     std::cout << "1. Patient Management" << std::endl;
@@ -73,62 +70,51 @@ void displayMainMenu() {
     std::cout << "---------------------------------------" << std::endl;
 }
 
+// Displays the patient management sub-menu
 void displayPatientMenu() {
     std::cout << "\n--- Patient Management ---" << std::endl;
     std::cout << "1. Add New Patient" << std::endl;
     std::cout << "2. Search Patient by ID" << std::endl;
     std::cout << "3. Search Patient by Name" << std::endl;
     std::cout << "4. Display Patient Medical History" << std::endl;
-    // 5. Delete Patient (Phase 2 or later)
     std::cout << "5. Back to Main Menu" << std::endl;
     std::cout << "--------------------------" << std::endl;
 }
 
+// Displays the doctor management sub-menu
 void displayDoctorMenu() {
     std::cout << "\n--- Doctor Management ---" << std::endl;
     std::cout << "1. Add New Doctor" << std::endl;
     std::cout << "2. Search Doctor by ID" << std::endl;
     std::cout << "3. Search Doctor by Name" << std::endl;
-    // 4. Update Doctor Info (Specialization)
-    // 5. Delete Doctor (Phase 2 or later)
     std::cout << "4. Back to Main Menu" << std::endl;
     std::cout << "-------------------------" << std::endl;
 }
 
+// Displays the appointment management sub-menu
 void displayAppointmentMenu() {
     std::cout << "\n--- Appointment Management ---" << std::endl;
     std::cout << "1. Book New Appointment" << std::endl;
     std::cout << "2. Reschedule Appointment" << std::endl;
-    // 3. Cancel Appointment (Phase 2 or later)
     std::cout << "3. Back to Main Menu" << std::endl;
     std::cout << "------------------------------" << std::endl;
 }
 
 int main() {
-    Hospital myHospital;
+    Hospital myHospital; // Create an instance of the Hospital system
     int choice;
     int subChoice;
 
     std::cout << "Welcome to the Hospital Management System!" << std::endl;
 
-    // A few initial data for testing purposes (optional, can be removed)
-    // std::shared_ptr<Patient> p1 = std::make_shared<Patient>("Ahmed Mostafa", 30, "Male", "Flu");
-    // myHospital.addPatient(p1);
-    // std::shared_ptr<Doctor> d1 = std::make_shared<Doctor>("Dr. Karim Hassan", 45, "Male", "Cardiology", 12345);
-    // myHospital.addDoctor(d1);
-    // p1->addMedicalRecord("Visited on 2023-01-15, prescribed Tamiflu.");
-    // std::shared_ptr<Appointment> app1 = std::make_shared<Appointment>(0, "2023-10-26", "10:00 AM", p1, d1);
-    // myHospital.addAppointment(app1);
-
-
     do {
-        displayMainMenu();
-        choice = getValidatedIntegerInput("Enter your choice: ");
+        displayMainMenu(); // Show main menu
+        choice = getValidatedIntegerInput("Enter your choice: "); // Get user's main menu choice
 
         switch (choice) {
             case 1: // Patient Management
                 do {
-                    displayPatientMenu();
+                    displayPatientMenu(); // Show patient sub-menu
                     subChoice = getValidatedIntegerInput("Enter your choice: ");
                     switch (subChoice) {
                         case 1: { // Add New Patient
@@ -137,8 +123,9 @@ int main() {
                             std::string gender = getValidatedStringInput("Enter patient gender (Male/Female/Unknown): ");
                             std::string disease = getValidatedStringInput("Enter patient disease (N/A if none): ");
                             try {
+                                // Create a new Patient object using shared_ptr for automatic memory management
                                 std::shared_ptr<Patient> newPatient = std::make_shared<Patient>(name, age, gender, disease);
-                                myHospital.addPatient(newPatient);
+                                myHospital.addPatient(newPatient); // Add patient to hospital system
                                 std::cout << "Patient " << name << " added successfully with ID: " << newPatient->getPatientID() << std::endl;
                             } catch (const std::invalid_argument& e) {
                                 std::cerr << "Error adding patient: " << e.what() << std::endl;
@@ -178,7 +165,7 @@ int main() {
                             }
                             break;
                         }
-                        case 5: // Back
+                        case 5: // Back to Main Menu
                             break;
                         default:
                             std::cout << "Invalid choice. Please try again." << std::endl;
@@ -189,7 +176,7 @@ int main() {
 
             case 2: // Doctor Management
                 do {
-                    displayDoctorMenu();
+                    displayDoctorMenu(); // Show doctor sub-menu
                     subChoice = getValidatedIntegerInput("Enter your choice: ");
                     switch (subChoice) {
                         case 1: { // Add New Doctor
@@ -199,8 +186,9 @@ int main() {
                             std::string specialization = getValidatedStringInput("Enter doctor specialization: ");
                             int license = getValidatedIntegerInput("Enter doctor license number (0 if none): ");
                             try {
+                                // Create a new Doctor object using shared_ptr
                                 std::shared_ptr<Doctor> newDoctor = std::make_shared<Doctor>(name, age, gender, specialization, license);
-                                myHospital.addDoctor(newDoctor);
+                                myHospital.addDoctor(newDoctor); // Add doctor to hospital system
                                 std::cout << "Doctor " << name << " added successfully with ID: " << newDoctor->getDoctorID() << std::endl;
                             } catch (const std::invalid_argument& e) {
                                 std::cerr << "Error adding doctor: " << e.what() << std::endl;
@@ -230,7 +218,7 @@ int main() {
                             }
                             break;
                         }
-                        case 4: // Back
+                        case 4: // Back to Main Menu
                             break;
                         default:
                             std::cout << "Invalid choice. Please try again." << std::endl;
@@ -241,14 +229,14 @@ int main() {
 
             case 3: // Appointment Management
                 do {
-                    displayAppointmentMenu();
+                    displayAppointmentMenu(); // Show appointment sub-menu
                     subChoice = getValidatedIntegerInput("Enter your choice: ");
                     switch (subChoice) {
                         case 1: { // Book New Appointment
                             int patientId = getValidatedPositiveIntegerInput("Enter patient ID for appointment: ");
                             std::shared_ptr<Patient> patient = myHospital.searchPatient(patientId);
 
-                            if (!patient) {
+                            if (!patient) { // Check if patient was found
                                 std::cout << "Patient with ID " << patientId << " not found. Cannot book appointment." << std::endl;
                                 break;
                             }
@@ -256,7 +244,7 @@ int main() {
                             int doctorId = getValidatedPositiveIntegerInput("Enter doctor ID for appointment: ");
                             std::shared_ptr<Doctor> doctor = myHospital.searchDoctor(doctorId);
 
-                            if (!doctor) {
+                            if (!doctor) { // Check if doctor was found
                                 std::cout << "Doctor with ID " << doctorId << " not found. Cannot book appointment." << std::endl;
                                 break;
                             }
@@ -265,8 +253,9 @@ int main() {
                             std::string time = getValidatedStringInput("Enter appointment time (HH:MM AM/PM): ");
 
                             try {
+                                // Create a new Appointment object using shared_ptr
                                 std::shared_ptr<Appointment> newAppointment = std::make_shared<Appointment>(0, date, time, patient, doctor);
-                                myHospital.addAppointment(newAppointment);
+                                myHospital.addAppointment(newAppointment); // Add appointment to hospital system
                                 std::cout << "Appointment booked successfully with ID: " << newAppointment->getAppointmentID() << std::endl;
                             } catch (const std::invalid_argument& e) {
                                 std::cerr << "Error booking appointment: " << e.what() << std::endl;
@@ -285,7 +274,7 @@ int main() {
                                 std::string newTime = getValidatedStringInput("Enter new appointment time (HH:MM AM/PM): ");
                                 
                                 try {
-                                    foundApp->rescheduleAppointment(newDate, newTime);
+                                    foundApp->rescheduleAppointment(newDate, newTime); // Call reschedule function
                                     std::cout << "Appointment ID " << appId << " rescheduled successfully." << std::endl;
                                 } catch (const std::invalid_argument& e) {
                                     std::cerr << "Error rescheduling appointment: " << e.what() << std::endl;
@@ -295,7 +284,7 @@ int main() {
                             }
                             break;
                         }
-                        case 3: // Back
+                        case 3: // Back to Main Menu
                             break;
                         default:
                             std::cout << "Invalid choice. Please try again." << std::endl;
@@ -324,7 +313,7 @@ int main() {
                 std::cout << "Invalid choice. Please enter a number between 1 and 7." << std::endl;
                 break;
         }
-    } while (choice != 7);
+    } while (choice != 7); // Continue until user chooses to exit (7)
 
     return 0;
 }
