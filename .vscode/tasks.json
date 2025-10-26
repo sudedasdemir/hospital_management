@@ -3,34 +3,34 @@
 	"tasks": [
 		{
 			"type": "cppbuild",
-			"label": "C/C++: Build Hospital System (Corrected)", // اسم المهمة
-			"command": "P:\\Program\\MinGW\\mingw64\\bin\\g++.exe", // مسار المترجم (compiler)
+			"label": "C/C++: Build Hospital System (Corrected)", // Task name for VS Code UI
+			"command": "P:\\Program\\MinGW\\mingw64\\bin\\g++.exe", // Path to your C++ compiler (g++)
 			"args": [
-                // Flags for warnings and debug information
+                // Compiler flags for warnings and debug information
                 "-Wall",      // Enable all common warnings
                 "-Wextra",    // Enable extra warnings
-                "-g3",        // Generate debug info for debugger (level 3)
+                "-g3",        // Generate debug symbols for debugging
 
-                // Source files - هنا بنضيف كل ملفات الـ .cpp اللي فيها الكود الفعلي
-                "${workspaceFolder}/Main.cpp",             // ملف الـ main
-                "${workspaceFolder}/HospitalSystem.cpp",   // ملف الـ implementation لكل الكلاسات
+                // Source files to be compiled
+                "${workspaceFolder}/Main.cpp",             // Main program file
+                "${workspaceFolder}/HospitalSystem.cpp",   // Implementation of classes
 
-                // Output file and path
+                // Output file specification
                 "-o",
-                "${workspaceFolder}/output/Main.exe",      // المسار واسم الملف التنفيذي
+                "${workspaceFolder}/output/Main.exe",      // Output executable path and name
                 
-                // C++ standard
-                "-std=c++17"            // استخدام معيار C++17
+                // C++ standard to use for compilation
+                "-std=c++17"            // Use C++17 standard
             ],
 			"options": {
-				"cwd": "${workspaceFolder}" // تشغيل الأمر من جذر مجلد المشروع
+				"cwd": "${workspaceFolder}" // Execute the command from the project root directory
 			},
 			"problemMatcher": [
-				"$gcc" // استخدام GCC problem matcher لتحليل أخطاء الـ compile
+				"$gcc" // Use GCC's problem matcher to parse compiler errors/warnings
 			],
 			"group": {
 				"kind": "build",
-				"isDefault": true // تعيين هذه المهمة كمهمة البناء الافتراضية
+				"isDefault": true // Set this as the default build task (run with Ctrl+Shift+B)
 			},
 			"detail": "Compiler: P:\\Program\\MinGW\\mingw64\\bin\\g++.exe"
 		}
