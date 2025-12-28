@@ -1,21 +1,39 @@
-
-#include "../Header/Appointment.h"
 #include <iostream>
-#include <algorithm>
+#include <vector>
+#include <string>
+#include <iomanip> 
+#include <limits> // numeric_limits için
+#include "../Header/Appointment.h"
+#include "../Header/Staff.h" 
+
 using namespace std;
 
 int Appointment::appointmentCounter = 5000;
 
-bool Appointment::doctorExists(const vector<Doctor>& doctors, const string& name) const {
-    for (const auto& d : doctors) {
-        if (d.getName() == name) return true; // Person::getName()
-    }
-    return false;
+string minutesToTime(int totalMinutes) {
+    int h = totalMinutes / 60;
+    int m = totalMinutes % 60;
+    string hStr = (h < 10 ? "0" : "") + to_string(h);
+    string mStr = (m < 10 ? "0" : "") + to_string(m);
+    return hStr + ":" + mStr;
 }
 
-bool Appointment::patientExists(const vector<Patient>& patients, const string& name) const {
-    for (const auto& p : patients) {
-        if (p.getName() == name) return true; // Person::getName()
+Appointment::Appointment() : id(0), doctorName(""), patientName(""), date(""), time("") {}
+
+Appointment::Appointment(string dName, string pName, string dt, string tm) 
+    : doctorName(dName), patientName(pName), date(dt), time(tm) {
+    id = ++appointmentCounter;
+}
+
+// GÜNCELLEME: Esnek Arama (Partial Match) - Linda yazınca Linda Chen'i bulur
+bool Appointment::doctorExists(const vector<Doctor>& doctors, const string& name) const {
+    if (name.empty()) return false;
+    for (const auto& d : doctors) {
+        string fullName = d.getFullName();
+        // Kısmi eşleşme kontrolü: Girilen metin tam ismin içinde geçiyor mu?
+        if (fullName.find(name) != string::npos || name.find(d.firstName) != string::npos) {
+            return true; 
+        }
     }
     return false;
 }
@@ -24,136 +42,116 @@ void Appointment::bookAppointment(vector<Appointment>& appointments,
                                   const vector<Doctor>& doctors,
                                   const vector<Patient>& patients) {
     if (doctors.empty() || patients.empty()) {
-        cout << "\nCannot create appointment. You must have at least one registered doctor and patient.\n";
+        cout << "\nError: System data missing. Register doctors and patients first.\n";
         return;
     }
 
-    Appointment a;
-    cout << "\nEnter Doctor Name: ";
-    cin >> a.doctorName;
-    cout << "Enter Patient Name: ";
-    cin >> a.patientName;
+    cout << "\n--- Select Appointment Type ---" << endl;
+    cout << "1. General Consultation\n2. Surgery\n3. Radiology\nChoice: ";
+    int typeChoice; cin >> typeChoice;
+    string typeStr = (typeChoice == 1) ? "Consultation" : (typeChoice == 2 ? "Surgery" : "Radiology");
 
-    // Validate names
-    if (!doctorExists(doctors, a.doctorName) || !patientExists(patients, a.patientName)) {
-        cout << "\n Cannot book appointment without a valid Doctor and Patient (names must exist).\n";
-        return;
-    }
+    cout << "\n--- Select Department ---" << endl;
+    cout << "1. Cardiology\n2. Ophthalmology\n3. Internal Medicine\nChoice: ";
+    int dept; cin >> dept;
 
-    cout << "Enter Date (DD/MM/YYYY): ";
-    cin >> a.date;
-    cout << "Enter Time (HH:MM): ";
-    cin >> a.time;
+    string dName, pName, dStr;
+    cout << "\nEnter Doctor Name (e.g. Linda): "; 
+    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Tampon temizliği
+    getline(cin, dName); // Boşluklu isim girişi desteği
+    
+    cout << "Enter Patient Name (e.g. Sude): "; 
+    getline(cin, pName);
 
-    a.id = ++appointmentCounter;
-    appointments.push_back(a);
-    cout << "\n Appointment booked successfully! [ID: " << a.id << "]\n";
-}
-
-void Appointment::searchAppointmentById(const vector<Appointment>& appointments) const {
-    if (appointments.empty()) {
-        cout << "\nNo appointments found.\n";
-        return;
-    }
-    int qid;
-    cout << "\nEnter Appointment ID to search: ";
-    cin >> qid;
-
-    bool found = false;
-    for (const auto& a : appointments) {
-        if (a.id == qid) {
-            cout << "\n----- Appointment -----\n";
-            cout << "ID: " << a.id << endl;
-            cout << "Doctor: " << a.doctorName << endl;
-            cout << "Patient: " << a.patientName << endl;
-            cout << "Date: " << a.date << endl;
-            cout << "Time: " << a.time << endl;
-            cout << "-----------------------\n";
-            found = true;
+    const Patient* targetPat = nullptr;
+    for (const auto& p : patients) {
+        string pFullName = p.getFullName();
+        // GÜNCELLEME: Hastayı bulurken de esnek davranıyoruz
+        if (pFullName.find(pName) != string::npos || pName.find(p.firstName) != string::npos) {
+            targetPat = &p;
             break;
         }
     }
-    if (!found) cout << "Appointment not found.\n";
-}
 
-void Appointment::editAppointment(vector<Appointment>& appointments,
-                                  const vector<Doctor>& doctors,
-                                  const vector<Patient>& patients) {
-    if (appointments.empty()) {
-        cout << "\nNo appointments to edit.\n";
+    // MANTIKSAL DÜZELTME: Esnek arama sayesinde "Rejected" hatası azalır
+    if (!doctorExists(doctors, dName) || targetPat == nullptr) {
+        cout << "\n[!] Rejected: Name mismatch. Make sure Doctor and Patient are registered.\n";
         return;
     }
-    int qid;
-    cout << "\nEnter Appointment ID to edit: ";
-    cin >> qid;
 
-    for (auto& a : appointments) {
-        if (a.id == qid) {
-            cout << "Editing appointment [ID: " << a.id << "]\n";
+    if (targetPat->getAge() >= 65) {
+        cout << "\n***************************************************";
+        cout << "\n>>> PRIORITY ALERT: Patient is 65+ years old.   <<<";
+        cout << "\n***************************************************\n";
+    }
 
-            string newDoctor, newPatient, newDate, newTime;
+    cout << "Enter Day of Week (e.g., Monday): "; cin >> dStr;
 
-            cout << "Enter New Doctor Name (current: " << a.doctorName << "): ";
-            cin >> newDoctor;
-            cout << "Enter New Patient Name (current: " << a.patientName << "): ";
-            cin >> newPatient;
+    if (typeChoice == 1 && dStr == "Wednesday") { 
+         cout << "\n[!] Dr. " << dName << " is in SURGERY on this day. Consultation blocked.\n";
+         return;
+    }
 
-            if (!doctorExists(doctors, newDoctor) || !patientExists(patients, newPatient)) {
-                cout << "\n Cannot update. Doctor and Patient must exist.\n";
-                return;
+    cout << "\n--- Available Slots for Dr. " << dName << " ---" << endl;
+    vector<string> freeSlots;
+    for (int current = 9 * 60; current < 17 * 60; current += 15) {
+        string slot = minutesToTime(current);
+        bool taken = false;
+        for (const auto& app : appointments) {
+            if (app.doctorName == dName && app.date == dStr && app.time == slot) {
+                taken = true; break;
             }
+        }
+        if (!taken) {
+            freeSlots.push_back(slot);
+            cout << "[" << slot << "] ";
+        }
+    }
 
-            cout << "Enter New Date (DD/MM/YYYY) (current: " << a.date << "): ";
-            cin >> newDate;
-            cout << "Enter New Time (HH:MM) (current: " << a.time << "): ";
-            cin >> newTime;
+    string tStr;
+    cout << "\n\nSelect a slot (HH:MM): "; cin >> tStr;
 
-            a.doctorName  = newDoctor;
-            a.patientName = newPatient;
-            a.date        = newDate;
-            a.time        = newTime;
+    bool isValid = false;
+    for (const string& s : freeSlots) { if (s == tStr) isValid = true; }
 
-            cout << "\n Appointment updated successfully.\n";
+    if (!isValid) {
+        cout << "\n!!! ERROR: Slot busy or invalid. !!!\n";
+    } else {
+        appointments.push_back(Appointment(dName, pName, dStr, tStr));
+        cout << "\n[" << typeStr << "] Booked Successfully! ID: " << appointments.back().id << "\n";
+    }
+}
+
+void Appointment::searchAppointmentById(const vector<Appointment>& appointments) const {
+    if (appointments.empty()) { cout << "\nNo appointments found.\n"; return; }
+    int qid; cout << "\nEnter ID: "; cin >> qid;
+    for (size_t i = 0; i < appointments.size(); i++) {
+        if (appointments[i].id == qid) {
+            cout << "\nID: " << appointments[i].id << " | Dr: " << appointments[i].doctorName 
+                 << " | Pat: " << appointments[i].patientName << " | Time: " << appointments[i].time << endl;
             return;
         }
     }
-    cout << "Appointment not found.\n";
+    cout << "Not found.\n";
 }
 
 void Appointment::deleteAppointment(vector<Appointment>& appointments) {
-    if (appointments.empty()) {
-        cout << "\nNo appointments to delete.\n";
-        return;
+    int qid; cout << "\nEnter ID to delete: "; cin >> qid;
+    for (size_t i = 0; i < appointments.size(); i++) {
+        if (appointments[i].id == qid) {
+            appointments.erase(appointments.begin() + i);
+            cout << "Deleted.\n"; return;
+        }
     }
-    int qid;
-    cout << "\nEnter Appointment ID to delete: ";
-    cin >> qid;
-
-    auto it = remove_if(appointments.begin(), appointments.end(),
-                        [qid](const Appointment& a){ return a.id == qid; });
-
-    if (it != appointments.end()) {
-        appointments.erase(it, appointments.end());
-        cout << " Appointment deleted successfully.\n";
-    } else {
-        cout << "Appointment not found.\n";
-    }
+    cout << "Not found.\n";
 }
 
 void Appointment::showAllAppointments(const vector<Appointment>& appointments) const {
     cout << "\n===== All Appointments =====\n";
-    if (appointments.empty()) {
-        cout << "No appointments found.\n";
-    } else {
-        for (const auto& a : appointments) {
-            cout << "ID: " << a.id
-                 << " | Doctor: " << a.doctorName
-                 << " | Patient: " << a.patientName
-                 << " | Date: " << a.date
-                 << " | Time: " << a.time << endl;
-        }
+    for (size_t i = 0; i < appointments.size(); i++) {
+        cout << "ID: " << appointments[i].id << " | Dr: " << appointments[i].doctorName 
+             << " | Pat: " << appointments[i].patientName << " | Day: " << appointments[i].date << " | Time: " << appointments[i].time << endl;
     }
-    cout << "=============================\n";
 }
 
 void Appointment::appointmentMenu(vector<Appointment>& appointments,
@@ -161,29 +159,20 @@ void Appointment::appointmentMenu(vector<Appointment>& appointments,
                                   const vector<Patient>& patients) {
     int choice;
     do {
-        cout << "\n------ Appointments ------\n";
-        cout << "1. Book New Appointment\n";
-        cout << "2. Search by Appointment ID\n";
-        cout << "3. Edit Appointment\n";
-        cout << "4. Delete Appointment\n";
-        cout << "0. Back to Main Menu\n";
-        cout << "--------------------------\n";
-        cout << "Enter your choice: ";
-        cin >> choice;
+        cout << "\n--- Appointment Menu ---" << endl;
+        cout << "1. Book Appointment\n2. Search\n3. Delete\n4. Show All\n0. Back\nChoice: "; cin >> choice;
+        
+        // GÜNCELLEME: Menü giriş koruması
+        if (cin.fail()) {
+            cin.clear(); cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
 
         switch (choice) {
             case 1: bookAppointment(appointments, doctors, patients); break;
             case 2: searchAppointmentById(appointments); break;
-            case 3: editAppointment(appointments, doctors, patients); break;
-            case 4: deleteAppointment(appointments); break;
-            case 0: cout << "Returning...\n"; break;
-            default: cout << "Invalid choice.\n";
+            case 3: deleteAppointment(appointments); break;
+            case 4: showAllAppointments(appointments); break;
         }
-
-        if (choice != 0) {
-            cout << "\nCurrent Appointments:\n";
-            showAllAppointments(appointments);
-        }
-
-    } while (choice!=0);
+    } while (choice != 0);
 }

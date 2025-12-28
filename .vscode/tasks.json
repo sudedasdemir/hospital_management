@@ -2,24 +2,33 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "type": "shell",
-            "label": "C/C++: g++.exe build all files",
-            "command": "P:\\Program\\MinGW\\mingw64\\bin\\g++.exe",
+            "type": "cppbuild",
+            "label": "Build Hospital Project",
+            "command": "/usr/bin/clang++",
             "args": [
-    "-g",
-    "-I",
-    "P:\\Game\\New folder (3)\\UNI\\Third year\\First term\\Programming Workshop\\Project\\Hospital\\Header",
-    "P:\\Game\\New folder (3)\\UNI\\Third year\\First term\\Programming Workshop\\Project\\Hospital\\Implementation\\*.cpp",
-    "P:\\Game\\New folder (3)\\UNI\\Third year\\First term\\Programming Workshop\\Project\\Hospital\\Main.cpp",
-    "-o",
-    "P:\\Game\\New folder (3)\\UNI\\Third year\\First term\\Programming Workshop\\Project\\Hospital\\Implementation\\Main.exe"
-],
+                "-std=c++17",
+                "-g",
+                // Header dosyalarının olduğu klasör
+                "-I${workspaceFolder}/Header",
+                // Implementation içindeki tüm cpp dosyaları
+                "${workspaceFolder}/Implementation/*.cpp",
+                // Ana Main dosyası
+                "${workspaceFolder}/Main.cpp",
+                "-o",
+                // Çıktı dosyası (Mac'te .exe uzantısına gerek yoktur ama karışıklık olmasın diye app diyelim)
+                "${workspaceFolder}/hospital_app"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": ["$gcc"],
-            "detail": "Build all hospital project source files"
+            "detail": "Mac OS Clang compiler configuration"
         }
     ]
 }

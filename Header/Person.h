@@ -1,37 +1,36 @@
-\
 #ifndef PERSON_H
 #define PERSON_H
 
 #include <string>
+#include <iostream>
+
 using namespace std;
 
-// -----------------------------------------------------------
-// Base Class: Person
-// -----------------------------------------------------------
-// This class provides basic information that is shared
-// between Doctor, Patient, and Staff classes.
-// Demonstrates inheritance and encapsulation.
-// -----------------------------------------------------------
+// Base Class for all individuals in the system
+// (Turkce Not: Kalitim kurali icin gereken temel ata sinif)
 class Person {
-protected:
-    string name;     // Person's full name
-    int age;         // Person's age
-    string gender;   // Gender of the person
-    int id;          // Unique ID (auto-generated in subclasses)
+public: 
+    // Requirement: Public access for Initial Seeding in main.cpp
+    string firstName;
+    string lastName;
+    int age;
+    string gender;
+    int id;
 
-public:
-    // Constructors
-    Person();
-    Person(string n, int a, string g);
+    // Requirement: Default Argument Value Assignment
+    Person(string fn = "Unknown", string ln = "Unknown", int a = 0, string g = "N/A");
 
-    // Core functions
-    void setInfo(string n, int a, string g);
-    void updateInfo(string n, int a, string g);
-    void displayInfo() const;
+    // Requirement: Virtual Function for Overriding
+    virtual void displayInfo() const;
+
+    // Requirement: Function Overloading
+    void updateInfo(string fn, string ln);
+    void updateInfo(string fn, string ln, int a, string g);
 
     // Getters
-    string getName() const;
-    int getID() const;
+    // Basic getters
+    string getFullName() const { return firstName + " " + lastName; }
+    int getID() const { return id; }
 };
 
 #endif

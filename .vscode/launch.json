@@ -2,18 +2,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run Hospital Management System",
+            "name": "Run Hospital App (Mac)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}\\Main.exe",
+            // tasks.json'da oluşturduğumuz çıktı dosyası
+            "program": "${workspaceFolder}/hospital_app",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": true,
-            "MIMode": "gdb",
-            "miDebuggerPath": "C:\\Program Files\\mingw-w64\\ucrt64\\bin\\gdb.exe",
-            "preLaunchTask": "C/C++: g++.exe build active file"
+            "externalConsole": true, // Terminali ayrı pencerede açar
+            "MIMode": "lldb", 
+            // tasks.json'daki label ile AYNI olmalı
+            "preLaunchTask": "Build Hospital Project"
         }
     ]
 }
