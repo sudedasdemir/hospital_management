@@ -19,6 +19,11 @@ public:
     // Default Constructor 
     Patient();
 
+   
+    bool operator==(const Patient& other) const {
+    return this->id == other.id;
+}
+
     // Requirement: Overriding 
     // (Turkce Not: displayInfo ismini Person ile ayni yaparak override ediyoruz)
     void displayInfo() const override;

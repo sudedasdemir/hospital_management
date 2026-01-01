@@ -29,6 +29,9 @@ public:
     // 1. Default Constructor
     Appointment();
 
+  // friend olduğu için özel verilere erişebilir
+    friend ostream& operator<<(ostream& os, const Appointment& app);
+
     // 2. Overloaded Constructor with Default Arguments
     // (Turkce Not: Hoca 'default argument value assignment' istediği için buraya ekledik)
     Appointment(string dName, string pName, string dt = "01/01/2025", string tm = "09:00"); 

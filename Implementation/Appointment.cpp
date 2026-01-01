@@ -127,8 +127,8 @@ void Appointment::searchAppointmentById(const vector<Appointment>& appointments)
     int qid; cout << "\nEnter ID: "; cin >> qid;
     for (size_t i = 0; i < appointments.size(); i++) {
         if (appointments[i].id == qid) {
-            cout << "\nID: " << appointments[i].id << " | Dr: " << appointments[i].doctorName 
-                 << " | Pat: " << appointments[i].patientName << " | Time: " << appointments[i].time << endl;
+            // ENTEGRASYON: Arama sonucunda da overloaded operator kullanılıyor
+            cout << appointments[i] << endl;
             return;
         }
     }
@@ -146,11 +146,16 @@ void Appointment::deleteAppointment(vector<Appointment>& appointments) {
     cout << "Not found.\n";
 }
 
+// ENTEGRASYON: showAllAppointments fonksiyonu operatör yüklemesi ile sadeleştirildi
 void Appointment::showAllAppointments(const vector<Appointment>& appointments) const {
-    cout << "\n===== All Appointments =====\n";
+    cout << "\n===== All Registered Appointments (Output Stream Overloaded) =====\n";
+    if (appointments.empty()) {
+        cout << "No appointments registered yet.\n";
+        return;
+    }
     for (size_t i = 0; i < appointments.size(); i++) {
-        cout << "ID: " << appointments[i].id << " | Dr: " << appointments[i].doctorName 
-             << " | Pat: " << appointments[i].patientName << " | Day: " << appointments[i].date << " | Time: " << appointments[i].time << endl;
+        // YENİ MANTIK: cout << nesne; diyerek tüm veriyi bastırıyoruz
+        cout << appointments[i] << endl; 
     }
 }
 
@@ -175,4 +180,14 @@ void Appointment::appointmentMenu(vector<Appointment>& appointments,
             case 4: showAllAppointments(appointments); break;
         }
     } while (choice != 0);
+}
+
+// OPERATOR OVERLOADING IMPLEMENTATION
+ostream& operator<<(ostream& os, const Appointment& app) {
+    os << "Appointment ID: " << app.id 
+       << " | Doctor: " << app.doctorName 
+       << " | Patient: " << app.patientName 
+       << " | Date: " << app.date 
+       << " @ " << app.time;
+    return os;
 }
