@@ -24,6 +24,11 @@ void initializeSystem(vector<Doctor>& doctors, vector<Staff>& staffList) {
         doctors.push_back(d);
     }
 
+    cout << "\n[System Log] Loading Database... Verifying Chief Doctor Entry:\n";
+    cout << doctors[0] << endl; 
+    cout << "[System Log] Initialization Complete.\n" << endl;
+
+
     // Sabit Hemşire Kadrosu (10 Hemşire) - GÜNCELLEME: İsim ve Soyisim ayrıldı
     string sFirst[] = {"Elena", "Marco", "Sophie", "Lucas", "Isabella", "Nathan", "Olivia", "Ethan", "Mia", "Thomas"};
     string sLast[] = {"Smith", "Rossi", "Muller", "Dubois", "Conti", "Brown", "Wilson", "Moore", "Clark", "Walker"};
